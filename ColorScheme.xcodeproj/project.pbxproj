@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		087C3DFF1AC0809400500518 /* ColorWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 087C3DFE1AC0809400500518 /* ColorWindowController.m */; };
+		087C3E011AC082B600500518 /* ColorWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 087C3E001AC082B600500518 /* ColorWindow.xib */; };
 		8E874BE81AAFC487000CD269 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8E874BE71AAFC487000CD269 /* Cocoa.framework */; };
 		8E874BF21AAFC487000CD269 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 8E874BF01AAFC487000CD269 /* InfoPlist.strings */; };
 		8E874BF41AAFC487000CD269 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 8E874BF31AAFC487000CD269 /* main.m */; };
@@ -31,6 +33,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		087C3DFD1AC0809400500518 /* ColorWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ColorWindowController.h; sourceTree = "<group>"; };
+		087C3DFE1AC0809400500518 /* ColorWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ColorWindowController.m; sourceTree = "<group>"; };
+		087C3E001AC082B600500518 /* ColorWindow.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ColorWindow.xib; sourceTree = "<group>"; };
 		8E874BE41AAFC487000CD269 /* ColorScheme.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ColorScheme.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8E874BE71AAFC487000CD269 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		8E874BEA1AAFC487000CD269 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
@@ -120,6 +125,9 @@
 				8E874BFC1AAFC487000CD269 /* MainMenu.xib */,
 				8E874BFF1AAFC487000CD269 /* Images.xcassets */,
 				8E874BEE1AAFC487000CD269 /* Supporting Files */,
+				087C3DFD1AC0809400500518 /* ColorWindowController.h */,
+				087C3DFE1AC0809400500518 /* ColorWindowController.m */,
+				087C3E001AC082B600500518 /* ColorWindow.xib */,
 			);
 			path = ColorScheme;
 			sourceTree = "<group>";
@@ -232,6 +240,7 @@
 			files = (
 				8E874BF21AAFC487000CD269 /* InfoPlist.strings in Resources */,
 				8E874C001AAFC487000CD269 /* Images.xcassets in Resources */,
+				087C3E011AC082B600500518 /* ColorWindow.xib in Resources */,
 				8E874BF81AAFC487000CD269 /* Credits.rtf in Resources */,
 				8E874BFE1AAFC487000CD269 /* MainMenu.xib in Resources */,
 			);
@@ -252,6 +261,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				087C3DFF1AC0809400500518 /* ColorWindowController.m in Sources */,
 				8E874BFB1AAFC487000CD269 /* AppDelegate.m in Sources */,
 				8E874BF41AAFC487000CD269 /* main.m in Sources */,
 			);
@@ -466,6 +476,7 @@
 				8E874C171AAFC487000CD269 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		8E874C181AAFC487000CD269 /* Build configuration list for PBXNativeTarget "ColorSchemeTests" */ = {
 			isa = XCConfigurationList;
@@ -474,6 +485,7 @@
 				8E874C1A1AAFC487000CD269 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
