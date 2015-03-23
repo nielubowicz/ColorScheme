@@ -12,6 +12,7 @@
 @interface AppDelegate ()
 
 @property (strong, nonatomic) NSOpenPanel *openPanel;
+@property (strong, nonatomic) NSSavePanel *savePanel;
 @property (strong, nonatomic) NSColorList *colorList;
 
 @end
@@ -27,7 +28,8 @@ static NSString *const methodString = @"[UIColor colorWithRed:%@ blue:%@ green:%
     // Insert code here to initialize your application
     self.openPanel = [NSOpenPanel openPanel];
     [self.openPanel setCanChooseFiles:YES];
-
+    
+    self.savePanel = [NSSavePanel savePanel];
 }
 
 - (IBAction)loadColorList:(id)sender
@@ -35,8 +37,12 @@ static NSString *const methodString = @"[UIColor colorWithRed:%@ blue:%@ green:%
     [self.openPanel setAllowedFileTypes:@[@"clr"]];
     
     if ( [self.openPanel runModal] == NSOKButton ) {
-        [self readColorListFromFile:[self.openPanel URL]];
-        [[NSApplication sharedApplication] terminate:nil];
+        self.savePanel.nameFieldStringValue = @"UIColor+";
+        self.savePanel.title = @"Give your color category a name:";
+        if ( [ self.savePanel runModal] == NSOKButton ) {
+            [self readColorListFromFile:[self.openPanel URL] intoFile:[self.savePanel URL]];
+            [[NSApplication sharedApplication] terminate:nil];
+        }
     }
 }
 
@@ -45,12 +51,15 @@ static NSString *const methodString = @"[UIColor colorWithRed:%@ blue:%@ green:%
     [self.openPanel setAllowedFileTypes:@[@"m"]];
     
     if ( [self.openPanel runModal] == NSOKButton ) {
-        [self readColorCategoryFromFile:[self.openPanel URL]];
-        [[NSApplication sharedApplication] terminate:nil];
+        self.savePanel.title = @"Give your color palette a name:";
+        if ( [ self.savePanel runModal] == NSOKButton ) {
+            [self readColorCategoryFromFile:[self.openPanel URL] intoFile:[self.savePanel URL]];
+            [[NSApplication sharedApplication] terminate:nil];
+        }
     }
 }
 
-- (void)readColorListFromFile:(NSURL *)filePath
+- (void)readColorListFromFile:(NSURL *)filePath intoFile:(NSURL *)saveFilePath
 {
     NSMutableString *headerFile = [NSMutableString new];
     NSMutableString *implementationFile = [NSMutableString new];
@@ -58,10 +67,8 @@ static NSString *const methodString = @"[UIColor colorWithRed:%@ blue:%@ green:%
     NSString *fileName = [[filePath lastPathComponent] stringByDeletingPathExtension];
     _colorList = [[NSColorList alloc] initWithName:fileName fromFile:filePath.path];
 
-    NSString *docDir = [NSHomeDirectory() stringByAppendingPathComponent:@"Documents"];
-    NSString *categoryName = [@"UIColor+" stringByAppendingString:_colorList.name];
-    NSString *headerFilename = [[docDir stringByAppendingPathComponent:categoryName ] stringByAppendingString:@".h"];
-    NSString *implementationFilename = [[docDir stringByAppendingPathComponent:categoryName ] stringByAppendingString:@".m"];
+    NSString *headerFilename = [saveFilePath.path stringByAppendingString:@".h"];
+    NSString *implementationFilename = [saveFilePath.path stringByAppendingString:@".m"];
     
     NSString *categoryInterface = [NSString stringWithFormat:@"#import <UIKit/UIKit.h>\n\n@interface UIColor (%@)\n\n", _colorList.name];
     [headerFile appendString:categoryInterface];
@@ -81,10 +88,10 @@ static NSString *const methodString = @"[UIColor colorWithRed:%@ blue:%@ green:%
         NSString *header = [NSString stringWithFormat:headerString, key];
         [headerFile appendString:header];
         
-        NSString *method = [NSString stringWithFormat:methodString, red, blue, green, alpha];
+        NSString *method = [NSString stringWithFormat:rawMethodString, red, blue, green, alpha];
         [implementationFile appendString:header];
         [implementationFile appendString:method];
-        [implementationFile appendString:@"\n\n"];
+        [implementationFile appendString:@"\n"];
     }
     
     [headerFile appendString:@"\n@end"];
@@ -97,12 +104,12 @@ static NSString *const methodString = @"[UIColor colorWithRed:%@ blue:%@ green:%
                       error:&err];
     
     [implementationFile writeToFile:implementationFilename
-                         atomically:YES
-                           encoding:NSUTF8StringEncoding
-                              error:&err];
+                        atomically:YES
+                          encoding:NSUTF8StringEncoding
+                             error:&err];
 }
 
-- (void)readColorCategoryFromFile:(NSURL *)filePath
+- (void)readColorCategoryFromFile:(NSURL *)filePath intoFile:(NSURL *)saveFilePath
 {
     _colorList = [[NSColorList alloc] initWithName:[filePath lastPathComponent]];
     
@@ -172,9 +179,7 @@ static NSString *const methodString = @"[UIColor colorWithRed:%@ blue:%@ green:%
         [_colorList setColor:color forKey:colorName];
     }
 
-    NSString *docDir = [NSHomeDirectory() stringByAppendingPathComponent:@"Documents"];
-    NSString *colorListName = [_colorList.name stringByAppendingPathExtension:@"clr"];
-    [_colorList writeToFile:[docDir stringByAppendingPathComponent:colorListName]];
+    [_colorList writeToFile:saveFilePath.path];
 }
 
 @end
