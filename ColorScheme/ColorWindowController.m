@@ -43,6 +43,7 @@ static NSString *const methodString = @"[UIColor colorWithRed:%@ blue:%@ green:%
     [self.openPanel setCanChooseFiles:YES];
     
     self.savePanel = [NSSavePanel savePanel];
+    self.savePanel.showsTagField = NO;
 }
 
 - (IBAction)loadColorList:(id)sender
@@ -65,6 +66,7 @@ static NSString *const methodString = @"[UIColor colorWithRed:%@ blue:%@ green:%
     
     if ( [self.openPanel runModal] == NSOKButton ) {
         self.savePanel.title = @"Give your color palette a name:";
+        self.savePanel.allowedFileTypes = @[ @"clr" ];
         if ( [ self.savePanel runModal] == NSOKButton ) {
             [self readColorCategoryFromFile:[self.openPanel URL] intoFile:[self.savePanel URL]];
             //            [[NSApplication sharedApplication] terminate:nil];
@@ -132,7 +134,7 @@ static NSString *const methodString = @"[UIColor colorWithRed:%@ blue:%@ green:%
     
     NSScanner *scanner = [NSScanner scannerWithString:colorImplementation];
     NSScanner *resultScanner = nil;
-    NSString *resultString;
+    NSString *resultString = @"\n";
     NSString *subResultString;
     
     NSString *colorName;
@@ -144,15 +146,17 @@ static NSString *const methodString = @"[UIColor colorWithRed:%@ blue:%@ green:%
         // scan to end of first method implementation, get method name
         NSString *lastResult = resultString;
         [scanner scanUpToString:@"\n" intoString:&resultString];
-        if ([lastResult isEqualToString:resultString]) {
+        if ([lastResult isEqualToString:resultString] || [scanner isAtEnd]) {
             break;
         }
         
         resultScanner = [NSScanner scannerWithString:resultString];
         [resultScanner scanUpToString:@")" intoString:&subResultString];
-        [resultScanner scanString:@")" intoString:NULL];
+        if (![resultScanner isAtEnd]) {
+            [resultScanner setScanLocation:resultScanner.scanLocation + 1];
+        }
         [resultScanner scanUpToString:@";\n" intoString:&subResultString];
-        colorName = [subResultString copy];
+        colorName = [[subResultString copy] stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@";\n"]];
         
         [scanner scanUpToString:@"[UIColor colorWithRed" intoString:&resultString];
         
@@ -164,34 +168,46 @@ static NSString *const methodString = @"[UIColor colorWithRed:%@ blue:%@ green:%
         float blue;
         float alpha;
         
-        float denominator;
-        [scanner scanUpToString:@":" intoString:&subResultString];
-        [scanner scanString:@":" intoString:&subResultString];
-        [scanner scanFloat:&red];
-        [scanner scanString:@"/" intoString:&subResultString];
-        [scanner scanFloat:&denominator];
+        float denominator = 1.f;
+        NSScanner *colorScanner = [NSScanner scannerWithString:resultString];
+        
+        [colorScanner scanUpToString:@":" intoString:&subResultString];
+        [colorScanner setScanLocation:colorScanner.scanLocation + 1];
+        [colorScanner scanFloat:&red];
+        [colorScanner scanString:@"/" intoString:&subResultString];
+        if ([subResultString isEqualToString:@"/"]) {
+            [colorScanner scanFloat:&denominator];
+        }
         red = red / denominator;
         
-        [scanner scanUpToString:@":" intoString:&subResultString];
-        [scanner scanString:@":" intoString:&subResultString];
-        [scanner scanFloat:&green];
-        [scanner scanString:@"/" intoString:&subResultString];
-        [scanner scanFloat:&denominator];
+        denominator = 1.f;
+        [colorScanner scanUpToString:@":" intoString:&subResultString];
+        [colorScanner setScanLocation:colorScanner.scanLocation + 1];
+        [colorScanner scanFloat:&green];
+        [colorScanner scanString:@"/" intoString:&subResultString];
+        if ([subResultString isEqualToString:@"/"]) {
+            [colorScanner scanFloat:&denominator];
+        }
         green = green / denominator;
         
-        [scanner scanUpToString:@":" intoString:&subResultString];
-        [scanner scanString:@":" intoString:&subResultString];
-        [scanner scanFloat:&blue];
-        [scanner scanString:@"/" intoString:&subResultString];
-        [scanner scanFloat:&denominator];
+        denominator = 1.f;
+        [colorScanner scanUpToString:@":" intoString:&subResultString];
+        [colorScanner setScanLocation:colorScanner.scanLocation + 1];
+        [colorScanner scanFloat:&blue];
+        [colorScanner scanString:@"/" intoString:&subResultString];
+        if ([subResultString isEqualToString:@"/"]) {
+            [colorScanner scanFloat:&denominator];
+        }
         blue = blue / denominator;
         
-        [scanner scanUpToString:@":" intoString:&subResultString];
-        [scanner scanString:@":" intoString:&subResultString];
-        [scanner scanFloat:&alpha];
+        [colorScanner scanUpToString:@":" intoString:&subResultString];
+        [colorScanner setScanLocation:colorScanner.scanLocation + 1];
+        [colorScanner scanFloat:&alpha];
         
         NSColor *color = (NSColor *)objc_msgSend([NSColor class], sel_getUid("colorWithRed:green:blue:alpha:"), *(float *)&red, *(float *)&blue, *(float *)&green, *(float *)&alpha);
         [_colorList setColor:color forKey:colorName];
+        
+        [scanner scanUpToString:@"+(" intoString:&resultString];
     }
     
     [_colorList writeToFile:saveFilePath.path];
