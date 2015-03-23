@@ -11,8 +11,8 @@
 static NSString *const categoryHeader = @"#import <UIKit/UIKit.h>\n\n@interface UIColor (%@)\n\n";
 static NSString *const categoryImplementationHeader = @"#import \"%@\"\n\n@implementation UIColor(%@)\n\n";
 static NSString *const headerString = @"+(UIColor *)%@;\n";
-static NSString *const rawMethodString = @"{\n\treturn [UIColor colorWithRed:%@ blue:%@ green:%@ alpha:%@];\n}\n";
-static NSString *const methodString = @"[UIColor colorWithRed:%@ blue:%@ green:%@ alpha:%@];";
+static NSString *const rawMethodString = @"{\n\treturn [UIColor colorWithRed:%@ green:%@ blue:%@ alpha:%@];\n}\n";
+static NSString *const methodString = @"[UIColor colorWithRed:%@ green:%@ blue:%@ alpha:%@];";
 
 @interface ColorWindowController () <NSTableViewDataSource, NSTableViewDelegate>
 
@@ -51,11 +51,11 @@ static NSString *const methodString = @"[UIColor colorWithRed:%@ blue:%@ green:%
     [self.openPanel setAllowedFileTypes:@[@"clr"]];
     
     if ( [self.openPanel runModal] == NSOKButton ) {
+        self.savePanel.allowedFileTypes = nil;
         self.savePanel.nameFieldStringValue = @"UIColor+";
         self.savePanel.title = @"Give your color category a name:";
         if ( [ self.savePanel runModal] == NSOKButton ) {
             [self readColorListFromFile:[self.openPanel URL] intoFile:[self.savePanel URL]];
-            //            [[NSApplication sharedApplication] terminate:nil];
         }
     }
 }
@@ -65,11 +65,10 @@ static NSString *const methodString = @"[UIColor colorWithRed:%@ blue:%@ green:%
     [self.openPanel setAllowedFileTypes:@[@"m"]];
     
     if ( [self.openPanel runModal] == NSOKButton ) {
-        self.savePanel.title = @"Give your color palette a name:";
         self.savePanel.allowedFileTypes = @[ @"clr" ];
+        self.savePanel.title = @"Give your color palette a name:";
         if ( [ self.savePanel runModal] == NSOKButton ) {
             [self readColorCategoryFromFile:[self.openPanel URL] intoFile:[self.savePanel URL]];
-            //            [[NSApplication sharedApplication] terminate:nil];
         }
     }
 }
@@ -105,7 +104,7 @@ static NSString *const methodString = @"[UIColor colorWithRed:%@ blue:%@ green:%
         NSString *header = [NSString stringWithFormat:headerString, key];
         [headerFile appendString:header];
         
-        NSString *method = [NSString stringWithFormat:rawMethodString, red, blue, green, alpha];
+        NSString *method = [NSString stringWithFormat:rawMethodString, red, green, blue, alpha];
         [implementationFile appendString:header];
         [implementationFile appendString:method];
         [implementationFile appendString:@"\n"];
@@ -204,7 +203,7 @@ static NSString *const methodString = @"[UIColor colorWithRed:%@ blue:%@ green:%
         [colorScanner setScanLocation:colorScanner.scanLocation + 1];
         [colorScanner scanFloat:&alpha];
         
-        NSColor *color = (NSColor *)objc_msgSend([NSColor class], sel_getUid("colorWithRed:green:blue:alpha:"), *(float *)&red, *(float *)&blue, *(float *)&green, *(float *)&alpha);
+        NSColor *color = (NSColor *)objc_msgSend([NSColor class], sel_getUid("colorWithRed:green:blue:alpha:"), *(float *)&red, *(float *)&green, *(float *)&blue, *(float *)&alpha);
         [_colorList setColor:color forKey:colorName];
         
         [scanner scanUpToString:@"+(" intoString:&resultString];
