@@ -19,6 +19,8 @@
 
 @implementation AppDelegate
 
+static NSString *const categoryHeader = @"#import <UIKit/UIKit.h>\n\n@interface UIColor (%@)\n\n";
+static NSString *const categoryImplementationHeader = @"#import \"%@\"\n\n@implementation UIColor(%@)\n\n";
 static NSString *const headerString = @"+(UIColor *)%@;\n";
 static NSString *const rawMethodString = @"{\n\treturn [UIColor colorWithRed:%@ blue:%@ green:%@ alpha:%@];\n}\n";
 static NSString *const methodString = @"[UIColor colorWithRed:%@ blue:%@ green:%@ alpha:%@];";
@@ -70,10 +72,10 @@ static NSString *const methodString = @"[UIColor colorWithRed:%@ blue:%@ green:%
     NSString *headerFilename = [saveFilePath.path stringByAppendingString:@".h"];
     NSString *implementationFilename = [saveFilePath.path stringByAppendingString:@".m"];
     
-    NSString *categoryInterface = [NSString stringWithFormat:@"#import <UIKit/UIKit.h>\n\n@interface UIColor (%@)\n\n", _colorList.name];
+    NSString *categoryInterface = [NSString stringWithFormat:categoryHeader, _colorList.name];
     [headerFile appendString:categoryInterface];
     
-    NSString *categoryImplementation = [NSString stringWithFormat:@"#import \"%@\"\n\n@implementation UIColor(%@)\n\n", [headerFilename lastPathComponent], _colorList.name];
+    NSString *categoryImplementation = [NSString stringWithFormat:categoryImplementationHeader, [headerFilename lastPathComponent], _colorList.name];
     [implementationFile appendString:categoryImplementation];
     
     for (NSString *key in _colorList.allKeys)
