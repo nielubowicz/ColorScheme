@@ -11,7 +11,7 @@ UIColor categories should follow the following format:
 
 +(UIColor *)colorName;
 {
-     return [UIColor colorWithRed:redValue blue:blueValue green:greenValue alpha:alphaValue];
+     return [UIColor colorWithRed:redValue green:greenValue blue:blueValue alpha:alphaValue];
 }
 
 @end
