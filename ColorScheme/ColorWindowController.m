@@ -71,7 +71,12 @@ static NSString *const methodString = @"[UIColor colorWithRed:%@ green:%@ blue:%
 }
 
 -(void)loadCatTypeSwift:(BOOL)isSwift{
-    [self.openPanel setAllowedFileTypes:@[@"m"]];
+    if (isSwift){
+        [self.openPanel setAllowedFileTypes:@[@"swift"]];
+    }else{
+        [self.openPanel setAllowedFileTypes:@[@"m"]];
+    }
+
     
     if ([self.openPanel runModal] == NSOKButton ) {
          self.savePanel.allowedFileTypes = @[ @"clr" ];
