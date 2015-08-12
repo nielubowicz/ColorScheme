@@ -65,9 +65,14 @@ static NSString *const methodString = @"[UIColor colorWithRed:%@ green:%@ blue:%
 {
     [self.openPanel setAllowedFileTypes:@[@"swift"]];
     
+    
     if ( [self.openPanel runModal] == NSOKButton ) {
         self.savePanel.allowedFileTypes = @[ @"clr" ];
         self.savePanel.title = @"Give your color palette a name:";
+        
+        //path where colors are stored
+        [self.savePanel setDirectoryURL:[NSURL URLWithString:@"~/Library/Colors"]];
+        
         if ( [ self.savePanel runModal] == NSOKButton ) {
             [self readColorCategoryFromFile:[self.openPanel URL] intoFile:[self.savePanel URL] forSwift:TRUE];
         }
@@ -80,6 +85,9 @@ static NSString *const methodString = @"[UIColor colorWithRed:%@ green:%@ blue:%
     if ( [self.openPanel runModal] == NSOKButton ) {
         self.savePanel.allowedFileTypes = @[ @"clr" ];
         self.savePanel.title = @"Give your color palette a name:";
+        
+        //path where colors are stored
+        [self.savePanel setDirectoryURL:[NSURL URLWithString:@"~/Library/Colors"]];
         if ( [ self.savePanel runModal] == NSOKButton ) {
             [self readColorCategoryFromFile:[self.openPanel URL] intoFile:[self.savePanel URL] forSwift:FALSE];
         }
