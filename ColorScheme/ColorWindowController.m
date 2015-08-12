@@ -60,18 +60,40 @@ static NSString *const methodString = @"[UIColor colorWithRed:%@ green:%@ blue:%
     }
 }
 
+#pragma mark - Button Actions -
+- (IBAction)loadColorCategorySwift:(id)sender
+{
+    [self loadCatTypeSwift:TRUE];
+}
 - (IBAction)loadColorCategory:(id)sender
 {
-    [self.openPanel setAllowedFileTypes:@[@"m"]];
+    [self loadCatTypeSwift:FALSE];
+}
+
+-(void)loadCatTypeSwift:(BOOL)isSwift{
+    if (isSwift){
+        [self.openPanel setAllowedFileTypes:@[@"swift"]];
+    }else{
+        [self.openPanel setAllowedFileTypes:@[@"m"]];
+    }
+
     
-    if ( [self.openPanel runModal] == NSOKButton ) {
-        self.savePanel.allowedFileTypes = @[ @"clr" ];
-        self.savePanel.title = @"Give your color palette a name:";
+    if ([self.openPanel runModal] == NSOKButton ) {
+         self.savePanel.allowedFileTypes = @[ @"clr" ];
+         self.savePanel.title = @"Give your color palette a name:";
+        
+        //set default save location here
+//        [self.savePanel setDirectoryURL:[NSURL URLWithString:@"~/Library/Colors"]];
+        
         if ( [ self.savePanel runModal] == NSOKButton ) {
-            [self readColorCategoryFromFile:[self.openPanel URL] intoFile:[self.savePanel URL]];
+            [self readColorCategoryFromFile:[self.openPanel URL]
+                                   intoFile:[self.savePanel URL]
+                                   forSwift:isSwift];
         }
     }
 }
+
+#pragma mark - convert to extension -
 
 - (void)readColorListFromFile:(NSURL *)filePath intoFile:(NSURL *)saveFilePath
 {
@@ -125,93 +147,159 @@ static NSString *const methodString = @"[UIColor colorWithRed:%@ green:%@ blue:%
                               error:&err];
 }
 
-- (void)readColorCategoryFromFile:(NSURL *)filePath intoFile:(NSURL *)saveFilePath
-{
+
+#pragma mark - pattern dictionaries -
+
+
+-(NSDictionary*)objcPatterns{
+    return @{
+             @"start": @"+(",
+             @"end": @"}",
+             @"title":@"\\+\\(UIColor\\*\\)(.*?)\\{",
+             @"red":@"colorWithRed:(.*?)green",
+             @"green":@"green:(.*?)blue",
+             @"blue":@"blue:(.*?)alpha:",
+             @"alpha":@"alpha:(.*?)\\]",
+             @"white":@"UIColorcolorWithWhite:(.*?)alpha:"
+             };
+}
+
+-(NSDictionary*)swiftPatterns{
+    return @{
+             @"start": @"classfunc",
+             @"end": @"}",
+             @"title":@"classfunc(.*?)\\(\\)",
+             @"red":@"red:(.*?),green",
+             @"green":@"green:(.*?),blue",
+             @"blue":@"blue:(.*?),alpha:",
+             @"alpha":@"alpha:(.*?)\\)",
+             @"white":@"white:(.*?)alpha:"
+             };
+}
+
+#pragma mark - convert to .clr -
+
+- (void)readColorCategoryFromFile:(NSURL *)filePath intoFile:(NSURL *)saveFilePath forSwift:(BOOL)isSwift{
     _colorList = [[NSColorList alloc] initWithName:[filePath lastPathComponent]];
     
     NSString *colorImplementation = [NSString stringWithContentsOfURL:filePath encoding:NSUTF8StringEncoding error:NULL];
     
-    NSScanner *scanner = [NSScanner scannerWithString:colorImplementation];
-    NSScanner *resultScanner = nil;
+    NSString *stripped = [colorImplementation stringByReplacingOccurrencesOfString : @" "
+                                                                        withString : @""];
+    
+    
+    NSScanner *scanner = [NSScanner scannerWithString:stripped];
+
     NSString *resultString = @"\n";
-    NSString *subResultString;
     
-    NSString *colorName;
+    NSString *lastResult = nil;
     
-    // scan to first method implementation
-    [scanner scanUpToString:@"+(" intoString:&resultString];
+    NSDictionary *p;
     
-    while (true) {
-        // scan to end of first method implementation, get method name
-        NSString *lastResult = resultString;
-        [scanner scanUpToString:@"\n" intoString:&resultString];
-        if ([lastResult isEqualToString:resultString] || [scanner isAtEnd]) {
-            break;
-        }
-        
-        resultScanner = [NSScanner scannerWithString:resultString];
-        [resultScanner scanUpToString:@")" intoString:&subResultString];
-        if (![resultScanner isAtEnd]) {
-            [resultScanner setScanLocation:resultScanner.scanLocation + 1];
-        }
-        [resultScanner scanUpToString:@";\n" intoString:&subResultString];
-        colorName = [[subResultString copy] stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@";\n"]];
-        
-        [scanner scanUpToString:@"[UIColor colorWithRed" intoString:&resultString];
-        
-        // get method signature -- red, blue, green and alpha values
-        [scanner scanUpToString:@";" intoString:&resultString];
-        
-        float red;
-        float green;
-        float blue;
-        float alpha;
-        
-        float denominator = 1.f;
-        NSScanner *colorScanner = [NSScanner scannerWithString:resultString];
-        
-        [colorScanner scanUpToString:@":" intoString:&subResultString];
-        [colorScanner setScanLocation:colorScanner.scanLocation + 1];
-        [colorScanner scanFloat:&red];
-        [colorScanner scanString:@"/" intoString:&subResultString];
-        if ([subResultString isEqualToString:@"/"]) {
-            [colorScanner scanFloat:&denominator];
-        }
-        red = red / denominator;
-        
-        denominator = 1.f;
-        [colorScanner scanUpToString:@":" intoString:&subResultString];
-        [colorScanner setScanLocation:colorScanner.scanLocation + 1];
-        [colorScanner scanFloat:&green];
-        [colorScanner scanString:@"/" intoString:&subResultString];
-        if ([subResultString isEqualToString:@"/"]) {
-            [colorScanner scanFloat:&denominator];
-        }
-        green = green / denominator;
-        
-        denominator = 1.f;
-        [colorScanner scanUpToString:@":" intoString:&subResultString];
-        [colorScanner setScanLocation:colorScanner.scanLocation + 1];
-        [colorScanner scanFloat:&blue];
-        [colorScanner scanString:@"/" intoString:&subResultString];
-        if ([subResultString isEqualToString:@"/"]) {
-            [colorScanner scanFloat:&denominator];
-        }
-        blue = blue / denominator;
-        
-        [colorScanner scanUpToString:@":" intoString:&subResultString];
-        [colorScanner setScanLocation:colorScanner.scanLocation + 1];
-        [colorScanner scanFloat:&alpha];
-        
-        NSColor *color = (NSColor *)objc_msgSend([NSColor class], sel_getUid("colorWithRed:green:blue:alpha:"), *(float *)&red, *(float *)&green, *(float *)&blue, *(float *)&alpha);
-        [_colorList setColor:color forKey:colorName];
-        
-        [scanner scanUpToString:@"+(" intoString:&resultString];
+    if (isSwift) {
+        p = [self swiftPatterns];
+    }else{
+        p = [self objcPatterns];
     }
+    
+    while (![scanner isAtEnd] && ![lastResult isEqualToString:resultString]) {
+        NSColor *color;
+        [scanner scanUpToString:p[@"start"] intoString:&resultString];
+        
+        lastResult = resultString;
+        
+        [scanner scanUpToString:p[@"end"] intoString:&resultString];
+        
+        NSLog(@"RES = %@", resultString);;
+        
+        NSString*title = [self findPattern:p[@"title"] FromString:resultString];
+        NSLog(@"TITLE = %@",title);
+        
+        if (title == nil){
+            continue;
+        }
+        
+        NSString *red = [self findPattern:p[@"red"] FromString:resultString];
+        NSLog(@"red = %@",red);
+        NSString *green = [self findPattern:p[@"green"] FromString:resultString];
+        NSLog(@"green = %@",green);
+        NSString *blue = [self findPattern:p[@"blue"] FromString:resultString];
+        NSLog(@"blue = %@",blue);
+        NSString *alpha = [self findPattern:p[@"alpha"] FromString:resultString];
+        NSLog(@"alpha = %@",alpha);
+        
+        if (red == nil){
+            NSString *white = [self findPattern:p[@"white"] FromString:resultString];
+            if (white == nil) {
+                continue;
+            }
+            NSLog(@"white = %@",white);
+            CGFloat w = [self floatMyString:white];
+            CGFloat a = [self floatMyString:alpha];
+            
+            color = [NSColor colorWithDeviceWhite:w alpha:a];
+            
+        }else{
+            CGFloat r = [self floatMyString:red];
+            CGFloat g = [self floatMyString:green];
+            CGFloat b = [self floatMyString:blue];
+            CGFloat a = [self floatMyString:alpha];
+            
+            color = [NSColor colorWithDeviceRed:r green:g blue:b alpha:a];
+            
+        }
+        
+        [_colorList setColor:color forKey:title];
+    }
+    
+    NSLog(@"_colorArray = %@",_colorList.allKeys);
     
     [_colorList writeToFile:saveFilePath.path];
     [self.tableView reloadData];
 }
+
+
+#pragma mark - RegEx Content -
+-(NSString*)findPattern:(NSString*)pattern FromString:(NSString*)inputString{
+    
+    NSRegularExpression *regex = [NSRegularExpression
+                                  regularExpressionWithPattern : pattern
+                                  options : NSRegularExpressionCaseInsensitive | NSRegularExpressionAnchorsMatchLines
+                                  error   : nil];
+    
+    NSTextCheckingResult *textCheckingResult = [regex firstMatchInString : inputString
+                                                                 options : 0
+                                                                   range : NSMakeRange(0, inputString.length)];
+    
+    NSRange matchRange = [textCheckingResult rangeAtIndex:1];
+    NSString *match    = [inputString substringWithRange:matchRange];
+    
+    //NSLog(@"Found string '%@'", match);
+    
+    if (match.length<1) {
+        return nil;
+    }
+    
+    return match;
+}
+
+
+
+-(CGFloat)floatMyString:(NSString*)string{
+    string = [string stringByReplacingOccurrencesOfString : @"f"
+                                               withString : @""];
+    NSLog(@"str = %@",string);
+    NSString* left = [self findPattern:@"^(.*?)/[0-9]+" FromString:string];
+    NSString* right = [self findPattern:@"[0-9]+/(.*?)$" FromString:string];
+    
+    NSLog(@"l = %@, r = %@", left, right);
+    if (left == nil){
+        return [string floatValue];
+    }
+    
+    return [left floatValue] / [right floatValue];
+}
+
 
 #pragma mark - NSTableViewDataSource methods
 - (NSInteger)numberOfRowsInTableView:(NSTableView *)tableView;
@@ -240,5 +328,6 @@ static NSString *const methodString = @"[UIColor colorWithRed:%@ green:%@ blue:%
     rowView.layer.backgroundColor = color.CGColor;
     return rowView;
 }
+
 
 @end
