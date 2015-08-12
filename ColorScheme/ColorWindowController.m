@@ -82,8 +82,8 @@ static NSString *const methodString = @"[UIColor colorWithRed:%@ green:%@ blue:%
          self.savePanel.allowedFileTypes = @[ @"clr" ];
          self.savePanel.title = @"Give your color palette a name:";
         
-        //path where colors are stored
-        [self.savePanel setDirectoryURL:[NSURL URLWithString:@"~/Library/Colors"]];
+        //set default save location here
+//        [self.savePanel setDirectoryURL:[NSURL URLWithString:@"~/Library/Colors"]];
         
         if ( [ self.savePanel runModal] == NSOKButton ) {
             [self readColorCategoryFromFile:[self.openPanel URL]
