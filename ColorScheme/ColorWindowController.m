@@ -60,6 +60,19 @@ static NSString *const methodString = @"[UIColor colorWithRed:%@ green:%@ blue:%
     }
 }
 
+#pragma mark - Button Actions -
+- (IBAction)loadColorCategorySwift:(id)sender
+{
+    [self.openPanel setAllowedFileTypes:@[@"swift"]];
+    
+    if ( [self.openPanel runModal] == NSOKButton ) {
+        self.savePanel.allowedFileTypes = @[ @"clr" ];
+        self.savePanel.title = @"Give your color palette a name:";
+        if ( [ self.savePanel runModal] == NSOKButton ) {
+            [self readColorCategoryFromFile:[self.openPanel URL] intoFile:[self.savePanel URL] forSwift:TRUE];
+        }
+    }
+}
 - (IBAction)loadColorCategory:(id)sender
 {
     [self.openPanel setAllowedFileTypes:@[@"m"]];
@@ -68,10 +81,12 @@ static NSString *const methodString = @"[UIColor colorWithRed:%@ green:%@ blue:%
         self.savePanel.allowedFileTypes = @[ @"clr" ];
         self.savePanel.title = @"Give your color palette a name:";
         if ( [ self.savePanel runModal] == NSOKButton ) {
-            [self readColorCategoryFromFile:[self.openPanel URL] intoFile:[self.savePanel URL]];
+            [self readColorCategoryFromFile:[self.openPanel URL] intoFile:[self.savePanel URL] forSwift:FALSE];
         }
     }
 }
+
+#pragma mark - convert to extension -
 
 - (void)readColorListFromFile:(NSURL *)filePath intoFile:(NSURL *)saveFilePath
 {
@@ -126,10 +141,38 @@ static NSString *const methodString = @"[UIColor colorWithRed:%@ green:%@ blue:%
 }
 
 
+#pragma mark - pattern dictionaries -
 
 
+-(NSDictionary*)objcPatterns{
+    return @{
+             @"start": @"+(",
+             @"end": @"}",
+             @"title":@"\\+\\(UIColor\\*\\)(.*?)\\{",
+             @"red":@"colorWithRed:(.*?)green",
+             @"green":@"green:(.*?)blue",
+             @"blue":@"blue:(.*?)alpha:",
+             @"alpha":@"alpha:(.*?)\\]",
+             @"white":@"UIColorcolorWithWhite:(.*?)alpha:"
+             };
+}
 
-- (void)readColorCategoryFromFile:(NSURL *)filePath intoFile:(NSURL *)saveFilePath{
+-(NSDictionary*)swiftPatterns{
+    return @{
+             @"start": @"classfunc",
+             @"end": @"}",
+             @"title":@"classfunc(.*?)\\(\\)",
+             @"red":@"red:(.*?),green",
+             @"green":@"green:(.*?),blue",
+             @"blue":@"blue:(.*?),alpha:",
+             @"alpha":@"alpha:(.*?)\\)",
+             @"white":@"white:(.*?)alpha:"
+             };
+}
+
+#pragma mark - convert to .clr -
+
+- (void)readColorCategoryFromFile:(NSURL *)filePath intoFile:(NSURL *)saveFilePath forSwift:(BOOL)isSwift{
     _colorList = [[NSColorList alloc] initWithName:[filePath lastPathComponent]];
     
     NSString *colorImplementation = [NSString stringWithContentsOfURL:filePath encoding:NSUTF8StringEncoding error:NULL];
@@ -139,46 +182,50 @@ static NSString *const methodString = @"[UIColor colorWithRed:%@ green:%@ blue:%
     
     
     NSScanner *scanner = [NSScanner scannerWithString:stripped];
-    NSScanner *resultScanner = nil;
+
     NSString *resultString = @"\n";
-    
     
     NSString *lastResult = nil;
     
+    NSDictionary *p;
+    
+    if (isSwift) {
+        p = [self swiftPatterns];
+    }else{
+        p = [self objcPatterns];
+    }
+    
     while (![scanner isAtEnd] && ![lastResult isEqualToString:resultString]) {
         NSColor *color;
-        [scanner scanUpToString:@"+(" intoString:&resultString];
-        // scan to end of first method implementation, get method name
+        [scanner scanUpToString:p[@"start"] intoString:&resultString];
+        
         lastResult = resultString;
-        [scanner scanUpToString:@"}" intoString:&resultString];
         
+        [scanner scanUpToString:p[@"end"] intoString:&resultString];
         
-        resultScanner = [NSScanner scannerWithString:resultString];
-        
-        
-        if (![resultScanner isAtEnd]) {
-            [resultScanner setScanLocation:resultScanner.scanLocation + 1];
-        }
         NSLog(@"RES = %@", resultString);;
         
-        NSString*title = [self findPattern:@"\\+\\(UIColor\\*\\)(.*?)\\{" FromString:resultString];
+        NSString*title = [self findPattern:p[@"title"] FromString:resultString];
         NSLog(@"TITLE = %@",title);
         
         if (title == nil){
             continue;
         }
         
-        NSString *red = [self findPattern:@"colorWithRed:(.*?)green" FromString:resultString];
+        NSString *red = [self findPattern:p[@"red"] FromString:resultString];
         NSLog(@"red = %@",red);
-        NSString *green = [self findPattern:@"green:(.*?)blue" FromString:resultString];
+        NSString *green = [self findPattern:p[@"green"] FromString:resultString];
         NSLog(@"green = %@",green);
-        NSString *blue = [self findPattern:@"blue:(.*?)alpha:" FromString:resultString];
+        NSString *blue = [self findPattern:p[@"blue"] FromString:resultString];
         NSLog(@"blue = %@",blue);
-        NSString *alpha = [self findPattern:@"alpha:(.*?)\\]" FromString:resultString];
+        NSString *alpha = [self findPattern:p[@"alpha"] FromString:resultString];
         NSLog(@"alpha = %@",alpha);
         
         if (red == nil){
-            NSString *white = [self findPattern:@"UIColorcolorWithWhite:(.*?)alpha:" FromString:resultString];
+            NSString *white = [self findPattern:p[@"white"] FromString:resultString];
+            if (white == nil) {
+                continue;
+            }
             NSLog(@"white = %@",white);
             CGFloat w = [self floatMyString:white];
             CGFloat a = [self floatMyString:alpha];
@@ -211,7 +258,7 @@ static NSString *const methodString = @"[UIColor colorWithRed:%@ green:%@ blue:%
     NSRegularExpression *regex = [NSRegularExpression
                                   regularExpressionWithPattern : pattern
                                   options : NSRegularExpressionCaseInsensitive | NSRegularExpressionAnchorsMatchLines
-                                  error : nil];
+                                  error   : nil];
     
     NSTextCheckingResult *textCheckingResult = [regex firstMatchInString : inputString
                                                                  options : 0
