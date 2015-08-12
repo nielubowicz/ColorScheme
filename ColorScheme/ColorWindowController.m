@@ -63,33 +63,27 @@ static NSString *const methodString = @"[UIColor colorWithRed:%@ green:%@ blue:%
 #pragma mark - Button Actions -
 - (IBAction)loadColorCategorySwift:(id)sender
 {
-    [self.openPanel setAllowedFileTypes:@[@"swift"]];
-    
-    
-    if ( [self.openPanel runModal] == NSOKButton ) {
-        self.savePanel.allowedFileTypes = @[ @"clr" ];
-        self.savePanel.title = @"Give your color palette a name:";
-        
-        //path where colors are stored
-        [self.savePanel setDirectoryURL:[NSURL URLWithString:@"~/Library/Colors"]];
-        
-        if ( [ self.savePanel runModal] == NSOKButton ) {
-            [self readColorCategoryFromFile:[self.openPanel URL] intoFile:[self.savePanel URL] forSwift:TRUE];
-        }
-    }
+    [self loadCatTypeSwift:TRUE];
 }
 - (IBAction)loadColorCategory:(id)sender
 {
+    [self loadCatTypeSwift:FALSE];
+}
+
+-(void)loadCatTypeSwift:(BOOL)isSwift{
     [self.openPanel setAllowedFileTypes:@[@"m"]];
     
-    if ( [self.openPanel runModal] == NSOKButton ) {
-        self.savePanel.allowedFileTypes = @[ @"clr" ];
-        self.savePanel.title = @"Give your color palette a name:";
+    if ([self.openPanel runModal] == NSOKButton ) {
+         self.savePanel.allowedFileTypes = @[ @"clr" ];
+         self.savePanel.title = @"Give your color palette a name:";
         
         //path where colors are stored
         [self.savePanel setDirectoryURL:[NSURL URLWithString:@"~/Library/Colors"]];
+        
         if ( [ self.savePanel runModal] == NSOKButton ) {
-            [self readColorCategoryFromFile:[self.openPanel URL] intoFile:[self.savePanel URL] forSwift:FALSE];
+            [self readColorCategoryFromFile:[self.openPanel URL]
+                                   intoFile:[self.savePanel URL]
+                                   forSwift:isSwift];
         }
     }
 }
