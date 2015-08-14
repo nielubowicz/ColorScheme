@@ -7,6 +7,7 @@
 //
 
 #import "ColorWindowController.h"
+#import "ColorScheme-Swift.h"
 
 static NSString *const categoryHeader = @"#import <UIKit/UIKit.h>\n\n@interface UIColor (%@)\n\n";
 static NSString *const categoryImplementationHeader = @"#import \"%@\"\n\n@implementation UIColor(%@)\n\n";
@@ -76,14 +77,14 @@ static NSString *const methodString = @"[UIColor colorWithRed:%@ green:%@ blue:%
     }else{
         [self.openPanel setAllowedFileTypes:@[@"m"]];
     }
-
+    
     
     if ([self.openPanel runModal] == NSOKButton ) {
-         self.savePanel.allowedFileTypes = @[ @"clr" ];
-         self.savePanel.title = @"Give your color palette a name:";
+        self.savePanel.allowedFileTypes = @[ @"clr" ];
+        self.savePanel.title = @"Give your color palette a name:";
         
         //set default save location here
-//        [self.savePanel setDirectoryURL:[NSURL URLWithString:@"~/Library/Colors"]];
+        //        [self.savePanel setDirectoryURL:[NSURL URLWithString:@"~/Library/Colors"]];
         
         if ( [ self.savePanel runModal] == NSOKButton ) {
             [self readColorCategoryFromFile:[self.openPanel URL]
@@ -189,7 +190,7 @@ static NSString *const methodString = @"[UIColor colorWithRed:%@ green:%@ blue:%
     
     
     NSScanner *scanner = [NSScanner scannerWithString:stripped];
-
+    
     NSString *resultString = @"\n";
     
     NSString *lastResult = nil;
@@ -255,6 +256,7 @@ static NSString *const methodString = @"[UIColor colorWithRed:%@ green:%@ blue:%
     NSLog(@"_colorArray = %@",_colorList.allKeys);
     
     [_colorList writeToFile:saveFilePath.path];
+    
     [self.tableView reloadData];
 }
 
@@ -323,11 +325,17 @@ static NSString *const methodString = @"[UIColor colorWithRed:%@ green:%@ blue:%
     
     NSColor *color = (NSColor *)[_colorList colorWithKey:[_colorList allKeys][row]];
     rowView.textField.stringValue = [_colorList allKeys][row];
+    NSColor *contrast = [color colorMatch];
+    NSLog(@"contrast = %@",contrast);
+    [rowView.textField setTextColor:contrast];
     rowView.textField.backgroundColor = color;
     rowView.wantsLayer = YES;
     rowView.layer.backgroundColor = color.CGColor;
     return rowView;
 }
+
+
+
 
 
 @end
