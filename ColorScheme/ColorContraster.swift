@@ -31,33 +31,33 @@ extension NSColor {
         print("blk = \(blkC), whtC = \(whtC)")
         
         if blkC > whtC{
-            return NSColor.blackColor()
+            return NSColor.black
         }else{
-            return NSColor.whiteColor()
+            return NSColor.white
         }
     }
 
-    func luminanace(r:Double, g:Double, b:Double) -> Double {
+    func luminanace(_ r:Double, g:Double, b:Double) -> Double {
         let colors:[Double] = [r,g,b]
-        let a = map(colors, { (var v:Double) -> Double in
+        let a = colors.map { (v:Double) -> Double in
             
             return  (v <= 0.03928) ?
                 (v / 12.92) :
                 (pow( ((v+0.055)/1.055), 2.4));
-        })
+        }
         return (a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722) + 0.05;
     }
     
     
     func colorComponents() -> [Double]{
         
-        let c = self.colorUsingColorSpace(.genericRGBColorSpace())
+        let c = self.usingColorSpace(.genericRGB)
         if c == nil{
             assert(false, "colorspace converts to nil")
         }
-        var fRed   : CGFloat  = c!.redComponent
-        var fGreen : CGFloat  = c!.greenComponent
-        var fBlue  : CGFloat  = c!.blueComponent
+        let fRed   : CGFloat  = c!.redComponent
+        let fGreen : CGFloat  = c!.greenComponent
+        let fBlue  : CGFloat  = c!.blueComponent
         
         return [fRed.d,fGreen.d,fBlue.d]
     }

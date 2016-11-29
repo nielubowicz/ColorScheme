@@ -20,7 +20,7 @@
 		8E874C081AAFC487000CD269 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8E874BE71AAFC487000CD269 /* Cocoa.framework */; };
 		8E874C101AAFC487000CD269 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 8E874C0E1AAFC487000CD269 /* InfoPlist.strings */; };
 		8E874C121AAFC487000CD269 /* ColorSchemeTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 8E874C111AAFC487000CD269 /* ColorSchemeTests.m */; };
-		BDC266921B7DD79200BBA432 /* ColorConstraster.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDC266911B7DD79200BBA432 /* ColorConstraster.swift */; };
+		BDC266921B7DD79200BBA432 /* ColorContraster.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDC266911B7DD79200BBA432 /* ColorContraster.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -57,7 +57,7 @@
 		8E874C0F1AAFC487000CD269 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		8E874C111AAFC487000CD269 /* ColorSchemeTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ColorSchemeTests.m; sourceTree = "<group>"; };
 		BDC266901B7DD79100BBA432 /* ColorScheme-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ColorScheme-Bridging-Header.h"; sourceTree = "<group>"; };
-		BDC266911B7DD79200BBA432 /* ColorConstraster.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ColorConstraster.swift; sourceTree = "<group>"; };
+		BDC266911B7DD79200BBA432 /* ColorContraster.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ColorContraster.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -123,7 +123,7 @@
 		8E874BED1AAFC487000CD269 /* ColorScheme */ = {
 			isa = PBXGroup;
 			children = (
-				BDC266911B7DD79200BBA432 /* ColorConstraster.swift */,
+				BDC266911B7DD79200BBA432 /* ColorContraster.swift */,
 				8E874BF91AAFC487000CD269 /* AppDelegate.h */,
 				8E874BFA1AAFC487000CD269 /* AppDelegate.m */,
 				8E874BFC1AAFC487000CD269 /* MainMenu.xib */,
@@ -211,9 +211,13 @@
 		8E874BDC1AAFC487000CD269 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				LastSwiftUpdateCheck = 0700;
 				LastUpgradeCheck = 0510;
 				ORGANIZATIONNAME = "Assorted Intelligence";
 				TargetAttributes = {
+					8E874BE31AAFC487000CD269 = {
+						LastSwiftMigration = 0810;
+					};
 					8E874C041AAFC487000CD269 = {
 						TestTargetID = 8E874BE31AAFC487000CD269;
 					};
@@ -266,7 +270,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BDC266921B7DD79200BBA432 /* ColorConstraster.swift in Sources */,
+				BDC266921B7DD79200BBA432 /* ColorContraster.swift in Sources */,
 				087C3DFF1AC0809400500518 /* ColorWindowController.m in Sources */,
 				8E874BFB1AAFC487000CD269 /* AppDelegate.m in Sources */,
 				8E874BF41AAFC487000CD269 /* main.m in Sources */,
@@ -410,6 +414,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "ColorScheme/ColorScheme-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 3.0;
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -426,6 +431,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "ColorScheme/ColorScheme-Bridging-Header.h";
+				SWIFT_VERSION = 3.0;
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;
