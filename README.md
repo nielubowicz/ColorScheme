@@ -16,3 +16,6 @@ UIColor categories should follow the following format:
 
 @end
 ```
+
+## Support
+Supports Objective-C, Swift 2.x and Swift 3.x
