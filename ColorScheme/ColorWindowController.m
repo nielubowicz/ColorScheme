@@ -22,6 +22,7 @@ static NSString *const methodString = @"[UIColor colorWithRed:%@ green:%@ blue:%
 @property (strong, nonatomic) NSColorList *colorList;
 
 @property (weak, nonatomic) IBOutlet NSTableView *tableView;
+@property (assign, nonatomic) BOOL swiftThree;
 
 @end
 
@@ -45,6 +46,8 @@ static NSString *const methodString = @"[UIColor colorWithRed:%@ green:%@ blue:%
     
     self.savePanel = [NSSavePanel savePanel];
     self.savePanel.showsTagField = NO;
+    self.swiftThree = YES;
+
 }
 
 - (IBAction)loadColorList:(id)sender
@@ -62,6 +65,10 @@ static NSString *const methodString = @"[UIColor colorWithRed:%@ green:%@ blue:%
 }
 
 #pragma mark - Button Actions -
+- (IBAction)switchFromSwift3:(id)sender
+{
+    self.swiftThree = !self.swiftThree;
+}
 - (IBAction)loadColorCategorySwift:(id)sender
 {
     [self loadCatTypeSwift:TRUE];
@@ -119,8 +126,8 @@ static NSString *const methodString = @"[UIColor colorWithRed:%@ green:%@ blue:%
     {
         NSColor *color = [_colorList colorWithKey:key];
         
-        NSNumber *red = @([color redComponent]);
-        NSNumber *blue = @([color blueComponent]);
+        NSNumber *red   = @([color redComponent]);
+        NSNumber *blue  = @([color blueComponent]);
         NSNumber *green = @([color greenComponent]);
         NSNumber *alpha = @([color alphaComponent]);
         
@@ -178,6 +185,19 @@ static NSString *const methodString = @"[UIColor colorWithRed:%@ green:%@ blue:%
              };
 }
 
+-(NSDictionary*)swift3Patterns{
+    return @{
+             @"start": @"classvar",
+             @"end": @"}",
+             @"title":@"classvar(.*?)\\:UIColor",
+             @"red":@"red:(.*?),green",
+             @"green":@"green:(.*?),blue",
+             @"blue":@"blue:(.*?),alpha:",
+             @"alpha":@"alpha:(.*?)\\)",
+             @"white":@"white:(.*?)alpha:"
+             };
+}
+
 #pragma mark - convert to .clr -
 
 - (void)readColorCategoryFromFile:(NSURL *)filePath intoFile:(NSURL *)saveFilePath forSwift:(BOOL)isSwift{
@@ -198,7 +218,7 @@ static NSString *const methodString = @"[UIColor colorWithRed:%@ green:%@ blue:%
     NSDictionary *p;
     
     if (isSwift) {
-        p = [self swiftPatterns];
+        p = [self swiftThree] ? [self swift3Patterns] : [self swiftPatterns];
     }else{
         p = [self objcPatterns];
     }
@@ -256,6 +276,14 @@ static NSString *const methodString = @"[UIColor colorWithRed:%@ green:%@ blue:%
     NSLog(@"_colorArray = %@",_colorList.allKeys);
     
     [_colorList writeToFile:saveFilePath.path];
+
+    NSString *destPath = [@"~/Library/Colors" stringByAppendingPathComponent:saveFilePath.lastPathComponent];
+    NSError *err;
+    [[NSFileManager defaultManager] copyItemAtPath:saveFilePath.path toPath:destPath error:&err];
+    if (err) {
+        NSLog(@"error = %@",err.localizedDescription);
+    }
+
     
     [self.tableView reloadData];
 }
